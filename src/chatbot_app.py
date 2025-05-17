@@ -2,7 +2,8 @@ import os
 import streamlit as st
 import time
 import logging
-from typing import Optional
+import tempfile
+from typing import Optional, List, Any
 from dotenv import load_dotenv
 
 from rag_app import RAGApplication
@@ -45,6 +46,38 @@ def get_rag_application():
     app = RAGApplication()
     return app
 
+def process_uploaded_files(uploaded_files: List[Any]) -> str:
+    """
+    Process uploaded PDF files and ingest them into the RAG system.
+    
+    Args:
+        uploaded_files: List of uploaded PDF files
+        
+    Returns:
+        Status message
+    """
+    if not uploaded_files:
+        return "No files uploaded"
+    
+    # Create a temporary directory to store uploaded files
+    with tempfile.TemporaryDirectory() as temp_dir:
+        # Save uploaded files to temp directory
+        for uploaded_file in uploaded_files:
+            if uploaded_file.name.lower().endswith('.pdf'):
+                file_path = os.path.join(temp_dir, uploaded_file.name)
+                with open(file_path, "wb") as f:
+                    f.write(uploaded_file.getbuffer())
+                logging.info(f"Saved uploaded file: {file_path}")
+        
+        # Ingest the documents
+        app = get_rag_application()
+        success = app.ingest_documents(directory_path=temp_dir)
+        
+        if success:
+            return f"Successfully ingested {len(uploaded_files)} documents"
+        else:
+            return "Failed to ingest documents. Check logs for details."
+
 def main():
     # Header
     st.title("📚 Document Q&A Chatbot")
@@ -56,17 +89,24 @@ def main():
     # Document ingestion section in sidebar
     st.sidebar.header("Document Management")
     
-    data_dir = st.sidebar.text_input("Document Directory Path", "data")
+    # File Upload UI
+    uploaded_files = st.sidebar.file_uploader(
+        "Upload PDF documents", 
+        type="pdf", 
+        accept_multiple_files=True,
+        help="Upload one or more PDF files to be ingested into the system"
+    )
     
-    if st.sidebar.button("Ingest Documents"):
-        with st.spinner("Ingesting documents... This may take a while"):
-            app = get_rag_application()
-            success = app.ingest_documents(directory_path=data_dir)
-            
-            if success:
-                st.sidebar.success("Documents ingested successfully!")
-            else:
-                st.sidebar.error("Failed to ingest documents. Check logs for details.")
+    if st.sidebar.button("Process Uploaded Files"):
+        if not uploaded_files:
+            st.sidebar.error("Please upload at least one PDF file")
+        else:
+            with st.spinner(f"Processing {len(uploaded_files)} uploaded files... This may take a while"):
+                result = process_uploaded_files(uploaded_files)
+                if "Successfully" in result:
+                    st.sidebar.success(result)
+                else:
+                    st.sidebar.error(result)
     
     # Advanced options in sidebar
     st.sidebar.header("Search Options")
