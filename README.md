@@ -1,6 +1,16 @@
-# RAG System for Technical PDF Documents
+# Basic RAG - Retrieval-Augmented Generation for Technical Documents
 
-A Retrieval-Augmented Generation (RAG) system built with LangChain and Qdrant to make technical manuals and annual reports searchable.
+A production-ready Retrieval-Augmented Generation (RAG) system that enhances LLM responses by automatically retrieving relevant context from your PDF documents. Built with LangChain, OpenAI, and Qdrant vector database, this system provides an intelligent chatbot interface for querying technical manuals and reports.
+
+## Key Features
+
+- 📄 **Automatic Document Processing**: Extract text from PDFs with intelligent chunking
+- 🔍 **Semantic Search**: Find information based on meaning, not just keywords
+- 💬 **Conversational Memory**: Maintains context across multiple questions
+- 🐳 **Docker Integration**: Runs Qdrant vector database in a container for easy deployment
+- 🚀 **One-Click Startup**: Automatically checks dependencies and launches the application
+- 📊 **Document Filtering**: Query by year or content type with metadata extraction
+- 🖥️ **User-Friendly Interface**: Clean, responsive Streamlit web application
 
 ## Overview
 
